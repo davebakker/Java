@@ -1,45 +1,45 @@
+import javax.sound.sampled.Clip;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
-import java.awt.Graphics2D;
-import java.awt.Color;
-import java.awt.Dimension;
+import java.awt.*;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class Panel extends JPanel implements ActionListener
 {
-    boolean focusable = true;
+    private final Background background;
+    private final Character character;
+    private final Collectible collectible;
+    private final Collision collision;
+    private final UI ui;
+    private final Grid grid;
 
-    Grid grid;
-    Character character;
-    Collectible collectible;
-    Collision collision;
-    UI ui;
+    private static Clip startClip;
+
+    public static boolean enableGrid = false;
 
     public Panel()
     {
-        Vector2 vector = new Vector2(40, 80);
-
+        int x = 40;
+        int y = 160;
         int width = 720;
-        int height = 680;
+        int height = 600;
 
-        final Color backgroundColor = new Color(170, 215, 81);
-        final Color gridColor = new Color(0, 0, 0);
-        final Color characterColor = new Color(71, 117, 235);
-        final Color collectibleColor = new Color(231, 71, 29);
+        Vector2 vector = new Vector2(x, y);
 
-        // creates a grid, character, collectible, collision and ui instance
-        grid = new Grid(vector.GetX(), vector.GetY(), width, height, Game.scale, gridColor);
-        character = new Character(characterColor);
-        collectible = new Collectible(vector.GetX(), vector.GetY(), width, height, Game.scale, collectibleColor, character);
+        background = new Background(Game.height, Game.width, Game.scale, this);
+        character = new Character();
+        collectible = new Collectible(vector.GetX(), vector.GetY(), width, height, Game.scale, character);
         collision = new Collision(vector.GetX(), vector.GetY(), width, height, character, collectible);
         ui = new UI();
+        grid = new Grid(x, y, width, height, Game.scale, Color.black);
+
+        startClip = Audio.GetAudio("Start.wav");
 
         this.setPreferredSize(new Dimension(Game.width, Game.height)); // sets the preferred size of panel's width and height
-        this.setBackground(backgroundColor); // sets the background to a color
-        this.setFocusable(focusable); // allows accessibility for focus (e.g. of the key event)
+        this.setFocusable(true); // allows accessibility for focus (e.g. of the key event)
         this.addKeyListener(new Input()); // binds an input instance to the key listener
 
         SetTimer();
@@ -61,7 +61,6 @@ public class Panel extends JPanel implements ActionListener
 
     private void Reset()
     {
-        // resets the character, collectible and ui
         character.Reset();
         collectible.Reset();
         ui.Reset();
@@ -69,27 +68,30 @@ public class Panel extends JPanel implements ActionListener
         Game.state = "RUN";
     }
 
+    public static void StartAudio() { Audio.PlayAudio(startClip); }
+
     private void Draw(java.awt.Graphics graphics)
     {
+        Graphics2D graphics2D = (Graphics2D)graphics; // converts the graphics to graphics2D
+
         // enhanced switch statement
         switch (Game.state)
         {
             case "START" -> ui.TextField(graphics, "START"); // displays a start screen
             case "RUN" -> {
-                // draws the instances
-                grid.Draw(graphics);
-                character.Draw((Graphics2D)graphics);
-                collectible.Draw(graphics);
+                background.Draw(graphics2D);
+                character.Draw(graphics2D);
+                collectible.Draw(graphics2D);
                 ui.Interface(graphics);
 
-                // gets the character input
+                if (enableGrid) { grid.Draw(graphics); }
+
                 character.Input();
 
-                // enables movement if the characters movement is true
                 if(character.movement) { character.Movement(); }
             }
-            case "PAUSE" -> ui.TextField(graphics, "PAUSE"); // display a pause screen
-            case "DEFEAT" -> Reset(); // resets the application
+            case "PAUSE" -> ui.TextField(graphics, "PAUSE");
+            case "DEFEAT" -> Reset();
         }
     }
 

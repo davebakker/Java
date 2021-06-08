@@ -5,14 +5,12 @@ import java.awt.Color;
 
 public class UI
 {
-    String startText = "PRESS 'SPACE' TO START";
-    String pauseText = "PAUSED";
-    String scoreText = "SCORE: ";
-    String highScoreText = "HIGH SCORE: ";
+    private final String startText = "PRESS 'SPACE' TO START";
+    private final String pauseText = "PAUSED";
 
-    Color textColor = new Color(0, 0, 0);
+    private final Color textColor = new Color(255, 255, 255, 255);
 
-    Font textFont = new Font("SansSerif", Font.BOLD, 32);
+    private final Font textFont = new Font("SansSerif", Font.BOLD, 32);
 
     public void Interface(Graphics graphics)
     {
@@ -21,15 +19,13 @@ public class UI
 
         FontMetrics metrics = graphics.getFontMetrics(graphics.getFont()); // creates a font metric from the font
 
-        // creates a width with the text and the size of the score, with use of the font metric
-        int scoreWidth = metrics.stringWidth(scoreText + Game.GetScore());
-        int highScoreWidth = metrics.stringWidth(highScoreText+ Game.GetHighScore());
-
-        int offset = 25;
+        int xScore = 80 + (Game.scale - metrics.stringWidth(String.valueOf(Game.GetScore()))) / 2;
+        int xHighScore = 200 + (Game.scale - metrics.stringWidth(String.valueOf(Game.GetHighScore()))) / 2;
+        int y = 40 + ((Game.scale - metrics.getHeight()) / 2) + metrics.getAscent();
 
         // draws the text with the given parameters
-        graphics.drawString(scoreText + Game.GetScore(), ((Game.width - scoreWidth) / 2) - (highScoreWidth / 2) - offset, graphics.getFont().getSize() + offset);
-        graphics.drawString(highScoreText + Game.GetHighScore(), ((Game.width - highScoreWidth) / 2) + (scoreWidth / 2) + offset, graphics.getFont().getSize() + offset);
+        graphics.drawString(String.valueOf(Game.GetScore()), xScore, y);
+        graphics.drawString(String.valueOf(Game.GetHighScore()), xHighScore, y);
     }
 
     public void TextField(Graphics graphics, String type)

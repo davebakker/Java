@@ -20,8 +20,11 @@ public class Input extends KeyAdapter implements KeyListener
 
             case KeyEvent.VK_SPACE -> {
                 if (Game.state.equals("PAUSE")) { Game.state = "RUN"; } else if (Game.state.equals("RUN")) { Game.state = "PAUSE"; } // pauses the game (toggle)
-                if (Game.state.equals("START")) { Game.state = "RUN"; } // starts the game
+                if (Game.state.equals("START")) { Game.state = "RUN"; Panel.StartAudio(); } // starts the game
             }
+
+            case KeyEvent.VK_G -> Panel.enableGrid = !Panel.enableGrid; // toggles between displaying the grid
+            case KeyEvent.VK_M -> Audio.enableAudio = !Audio.enableAudio; // toggles between muting the audio
 
             case KeyEvent.VK_ESCAPE -> System.exit(0); // exits the application (exit success)
         }

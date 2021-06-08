@@ -1,30 +1,73 @@
+import javax.imageio.ImageIO;
+
 import java.awt.Rectangle;
-import java.awt.Color;
 import java.awt.Graphics2D;
 
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class Character
 {
     private final ArrayList<Rectangle> body;
 
-    private final Color color;
-
     private String direction = "NULL";
 
     public boolean movement = false;
 
-    public Character(Color color)
+    private final BufferedImage[] images;
+
+    public Character()
     {
-        this.color = color; // sets the color
         body = new ArrayList<>(); // creates an array of rectangles instance
+        images = new BufferedImage[2];
+
+        SetImage("character_head.png", 0);
+        SetImage("character_body.png", 1);
+
         CreateBody();
     }
 
-    public void Draw(Graphics2D graphics)
+    private void SetImage(String file, int index)
     {
-        graphics.setColor(color); // sets the color of the rectangle
-        for (Rectangle rectangle : body) { graphics.fill(rectangle); } // fills each rectangle of the array of rectangles (body)
+        try { images[index] = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/" + file))); }
+        catch (IOException exception) { exception.printStackTrace(); }
+    }
+
+    private AffineTransform Rotate(Rectangle rectangle)
+    {
+        String direction = Input.key;
+
+        AffineTransform transform = images[0].createGraphics().getTransform();
+
+        double rotation = 0;
+        int width = images[0].getWidth() / 2;
+        int height = images[0].getHeight() / 2;
+
+        switch (direction)
+        {
+            case "UP" -> rotation = 0;
+            case "DOWN" -> rotation = 180;
+            case "LEFT" -> rotation = -90;
+            case "RIGHT" -> rotation = 90;
+        }
+
+        transform.setToTranslation(rectangle.x, rectangle.y);
+        transform.rotate(Math.toRadians(rotation), width, height);
+
+        return transform;
+    }
+
+    public void Draw(Graphics2D graphics2D)
+    {
+        int index = 0;
+        for (Rectangle rectangle : body)
+        {
+            if (index == 0) {  graphics2D.drawImage(images[0], Rotate(rectangle), null); index++; }
+            else { graphics2D.drawImage(images[1], rectangle.x, rectangle.y, rectangle.width, rectangle.height, null); }
+        }
     }
 
     public void Input()
