@@ -9,25 +9,24 @@ import java.util.Scanner;
 
 public class ReadWrite
 {
-    // DO A GET FILE FIRST BEFORE READING AND WRITING
-    // STATIC FUNCTIONS DONT MAKE SENSE, NEED TO CREATE A DIRECTORY FIRST BEFORE READING/WRITING A FILE (BECAUSE THE FILE IS INSIDE THE DIR.)
+    private final static String directory = "text";
 
-    private static final String directory = "text";
+    public ReadWrite() { CreateDirectory(); }
 
-    public ReadWrite() { CreateDirectory(directory); }
-
-    private void CreateDirectory(String folder)
+    // Creates a directory
+    private void CreateDirectory()
     {
-        Path path = Paths.get(folder);
+        Path path = Paths.get(directory);
         if (!Files.exists(path))
         {
-            File file = new File(folder);
-            if (file.mkdir()) { System.out.println("Successfully created the folder '" + folder + "'"); }
-            else { System.out.println("ERROR: failed to create the folder '" + folder + "'"); }
+            File file = new File(directory);
+            if (file.mkdir()) { System.out.println("Successfully created the folder '" + directory + "'"); }
+            else { System.out.println("ERROR: failed to create the folder '" + directory + "'"); }
         }
-        else { System.out.println("ERROR: failed to create the folder '" + folder + "', folder already exists"); }
+        else { System.out.println("(!) failed to create the folder '" + directory+ "', folder already exists"); }
     }
 
+    // Creates a file (.txt) inside the directory
     public void CreateFile(String filename)
     {
         Path path = Paths.get(directory);
@@ -36,14 +35,17 @@ public class ReadWrite
             try
             {
                 File file = new File(directory + File.separator + filename);
-                if (!file.exists()) { file.createNewFile(); WriteScore(filename, 0); }
-                else System.out.println("ERROR: failed to create the file '" + filename + "', file already exists");
+                boolean fileCreation = false;
+                if (!file.exists()) { fileCreation = file.createNewFile(); WriteScore(filename, 0); }
+                else System.out.println("(!) failed to create the file '" + filename + "', file already exists");
+                if (fileCreation)  { System.out.println("Successfully created the file '" + filename + "'"); }
             }
             catch (IOException exception) { exception.printStackTrace(); }
         }
         else { System.out.println("ERROR: failed to create the file, directory doesn't exist"); }
     }
 
+    // Reads and returns the score of the file (.txt)
     public static int ReadScore(String filename)
     {
         Scanner scanner = null;
@@ -56,10 +58,12 @@ public class ReadWrite
         }
         catch (FileNotFoundException exception) { exception.printStackTrace(); }
 
+        assert scanner != null;
         data = scanner.nextLine();
         return Integer.parseInt(data);
     }
 
+    // Writes the score in the file (.txt)
     public static void WriteScore(String filename, int score)
     {
         try

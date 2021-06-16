@@ -3,27 +3,23 @@ import java.awt.Color;
 
 public class Grid
 {
-    private final int x, y, width, height, scale, rows, columns;
+    private final int rows, columns;
     private final Color color;
 
-    public Grid(int x, int y, int width, int height, int scale, Color color)
+    public Grid()
     {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-        this.scale = scale;
-        this.color = color;
+        color = new Color(0, 0, 0);
 
-        rows = height / scale; // sets the amount of rows by dividing the height by the scale
-        columns = width / scale; // sets the amount of columns by dividing the width by the scale
+        rows = Game.height / Game.scale;
+        columns = Game.width / Game.scale;
     }
 
+    // Draws the lines which are displayed as a grid
     public void Draw(Graphics graphics)
     {
-        graphics.setColor(color); // sets the grid color
+        graphics.setColor(color);
 
-        for(int r = 0; r< rows + 1; ++r) { graphics.drawLine(x, y + (r * scale), x + width, y + (r * scale)); } // creates rows of lines
-        for(int c = 0; c < columns + 1; ++c) { graphics.drawLine(x + (c * scale), y,  x + (c * scale), y + height); } // creates columns of lines
+        for(int r = 0; r< rows + 1; ++r) { graphics.drawLine(Game.x, Game.y + (r * Game.scale), Game.x + Game.width, Game.y + (r * Game.scale)); }
+        for(int c = 0; c < columns + 1; ++c) { graphics.drawLine(Game.x + (c * Game.scale), Game.y,  Game.x + (c * Game.scale), Game.y + Game.height); }
     }
 }

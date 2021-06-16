@@ -2,13 +2,16 @@ import javax.sound.sampled.Clip;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
-import java.awt.*;
+import java.awt.Graphics2D;
+import java.awt.Dimension;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class Panel extends JPanel implements ActionListener
 {
+    private static int delay = 140;
+
     private final Background background;
     private final Character character;
     private final Collectible collectible;
@@ -16,47 +19,48 @@ public class Panel extends JPanel implements ActionListener
     private final UI ui;
     private final Grid grid;
 
+    private static Timer timer;
     private static Clip startClip;
 
     public static boolean enableGrid = false;
 
     public Panel()
     {
-        int x = 40;
-        int y = 160;
-        int width = 720;
-        int height = 600;
-
-        Vector2 vector = new Vector2(x, y);
-
-        background = new Background(Game.height, Game.width, Game.scale, this);
+        background = new Background(this);
         character = new Character();
-        collectible = new Collectible(vector.GetX(), vector.GetY(), width, height, Game.scale, character);
-        collision = new Collision(vector.GetX(), vector.GetY(), width, height, character, collectible);
+        collectible = new Collectible(character);
+        collision = new Collision(character, collectible);
         ui = new UI();
-        grid = new Grid(x, y, width, height, Game.scale, Color.black);
+        grid = new Grid();
 
         startClip = Audio.GetAudio("Start.wav");
 
-        this.setPreferredSize(new Dimension(Game.width, Game.height)); // sets the preferred size of panel's width and height
+        this.setPreferredSize(new Dimension(Game.windowWidth, Game.windowHeight)); // sets the preferred size of the panel's width and height
         this.setFocusable(true); // allows accessibility for focus (e.g. of the key event)
-        this.addKeyListener(new Input()); // binds an input instance to the key listener
+        this.addKeyListener(new Input());
 
         SetTimer();
     }
 
     private void SetTimer()
     {
-        Timer timer = new Timer(Game.delay, this); // creates a named timer instance
-        timer.start(); // starts the timer
+        timer = new Timer(delay, this);
+        timer.start();
+    }
+
+    public static void IncreaseDelay() { if (delay > 80) { timer.setDelay(delay -= 15); } }
+
+    public static void ResetDelay()
+    {
+        delay = 140;
+        timer.setDelay(delay);
     }
 
     private void CheckCollision()
     {
-        // checks the collision of the character, collectible, and border
         collision.CollisionCollectible();
         collision.CollisionBorder();
-        collision.CollisionSelf();
+        collision.CollisionCharacter();
     }
 
     private void Reset()
@@ -72,12 +76,11 @@ public class Panel extends JPanel implements ActionListener
 
     private void Draw(java.awt.Graphics graphics)
     {
-        Graphics2D graphics2D = (Graphics2D)graphics; // converts the graphics to graphics2D
+        Graphics2D graphics2D = (Graphics2D)graphics;
 
-        // enhanced switch statement
         switch (Game.state)
         {
-            case "START" -> ui.TextField(graphics, "START"); // displays a start screen
+            case "START" -> ui.TextField(graphics, "START");
             case "RUN" -> {
                 background.Draw(graphics2D);
                 character.Draw(graphics2D);
@@ -87,22 +90,21 @@ public class Panel extends JPanel implements ActionListener
                 if (enableGrid) { grid.Draw(graphics); }
 
                 character.Input();
-
-                if(character.movement) { character.Movement(); }
+                character.Movement();
             }
             case "PAUSE" -> ui.TextField(graphics, "PAUSE");
             case "DEFEAT" -> Reset();
         }
     }
 
-    @Override // override annotation
+    @Override
     public void paintComponent(java.awt.Graphics graphics)
     {
         super.paintComponent(graphics); // allows this method do have its own behaviour but utilize in the original class
         Draw(graphics);
     }
 
-    @Override // override annotation
+    @Override
     public void actionPerformed(ActionEvent event) // invoked automatically when a registered component gets clicked
     {
         CheckCollision();

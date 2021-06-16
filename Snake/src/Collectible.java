@@ -11,23 +11,16 @@ import java.util.Random;
 
 public class Collectible
 {
-    private final int x, y, width, height, scale;
-
-    private Vector2 position;
-
+    private final Vector2 position;
     private final Character character;
-
     private BufferedImage image;
 
-    private boolean specialCollectible = true;
+    private int collectibleType = 0;
 
-    public Collectible(int x, int y, int width, int height, int scale, Character character)
+    public Collectible(Character character)
     {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-        this.scale = scale;
+        position = new Vector2();
+
         this.character = character;
 
         SetType();
@@ -35,58 +28,67 @@ public class Collectible
         RandomLocation();
     }
 
+    // Sets the type of collectible by a random number
     public void SetType()
     {
         Random random = new Random();
-        int value = random.nextInt(10 + 1) + 1;
-
-        if (value <= 1) { specialCollectible = true; }
-        else {  specialCollectible = false; }
+        collectibleType = random.nextInt(10 + 1) + 1;
     }
 
+    // Sets the image by the type of collectible
     public void SetImage()
     {
-        String file = "collectible_1.png";
-        if (specialCollectible) { file = "collectible_2.png"; }
+        String file;
+
+        switch (collectibleType)
+        {
+            case 1 | 2 -> file = "collectible_3.png";
+            case 3 | 4 -> file = "collectible_2.png";
+            default -> file = "collectible_1.png";
+        }
 
         try { image = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/" + file))); }
         catch (IOException exception) { exception.printStackTrace(); }
     }
 
-    public void Draw(Graphics2D graphics2D)
+    // Sets the score by the type of collectible
+    public void SetScore()
     {
-        graphics2D.drawImage(image, position.GetX(), position.GetY(), scale, scale, null); // draws the image
-    }
-
-    public void RandomLocation()
-    {
-        Random random = new Random(); // creates a named random instance
-        boolean overlap = true;
-
-        while (overlap)
+        switch (collectibleType)
         {
-            // sets the position (x and y) to a random location with the width, height and scale of the game
-            position = new Vector2(x + random.nextInt(width / scale) * scale, y + random.nextInt(height / scale) * scale);
-
-            // gets the individual rectangles of the array of rectangles (body)
-            for (Rectangle rectangle : character.GetBody())
-            {
-                // sets overlap to true if the x and the y of the rectangle equals to the x and the y of the collectible
-                if (position.GetX() == rectangle.x && position.GetY() == rectangle.y) { overlap = true; } else { overlap = false; break; }
-            }
+            case 1 | 2 -> { Game.IncrementScore(10); Panel.IncreaseDelay(); }
+            case 3 | 4 -> Game.IncrementScore(5);
+            default -> Game.IncrementScore(1);
         }
     }
 
-    public void SetScore()
+    // Draws the collectible by a singular image
+    public void Draw(Graphics2D graphics2D)
     {
-        int amount = 1;
-        if (specialCollectible) { amount = 5; }
-
-        Game.IncrementScore(amount);
+        graphics2D.drawImage(image, position.GetX(), position.GetY(), Game.scale, Game.scale, null);
     }
 
-    public void Reset() { RandomLocation(); } // resets the collectible with a new random location
+    // Gets a random x and y value and checks for overlap with the character
+    public void RandomLocation()
+    {
+        Random random = new Random();
+        boolean overlap = true;
 
-    public int GetX() { return position.GetX(); } // returns the x value
-    public int GetY() { return position.GetY(); } // returns the y value
+        // Continuously renews the
+        while (overlap)
+        {
+            int width = Game.width;
+            int height = Game.height;
+
+            position.SetX(Game.x + random.nextInt(width / Game.scale) * Game.scale);
+            position.SetY(Game.y + random.nextInt(height / Game.scale) * Game.scale);
+
+            for (Rectangle rectangle : character.GetBody()) { if (position.GetX() != rectangle.x && position.GetY() != rectangle.y) { overlap = false; } }
+        }
+    }
+
+    public void Reset() { RandomLocation(); Panel.ResetDelay(); }
+
+    public int GetX() { return position.GetX(); }
+    public int GetY() { return position.GetY(); }
 }
